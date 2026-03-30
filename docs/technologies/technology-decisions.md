@@ -38,4 +38,4 @@ Two local OCR implementations will be designed and evaluated:
 - **Why**: broad support, mature local deployment model.
 - **Portability implications**: strong.
 
-A dedicated OCR decision record must document the final selected implementations, tradeoffs, and fallback behavior.
+This strategy is now captured in `ADR-0005-dual-local-ocr-engine-selection.md`.
