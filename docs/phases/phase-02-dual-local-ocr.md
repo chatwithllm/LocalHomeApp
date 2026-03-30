@@ -22,6 +22,19 @@ Implement a dual local OCR strategy that supports both Apple-optimized execution
 - portable OCR implementation
 - OCR result schema
 - OCR evaluation and decision notes
+- initial Phase 2 implementation pack with OCR interface/result scaffolding and baseline tests
+
+## Current Status Notes
+- Phase 2 planning has started.
+- Dual local OCR strategy is now explicitly documented via ADR.
+- OCR result and interface scaffolding have been added.
+- Apple-oriented OCR, portable OCR, and preprocessing boundaries are now scaffolded for the next implementation slices.
+- OCR result storage has now been added, and the Tesseract path now has a first real execution implementation with explicit not-available and failed states.
+- Basic local preprocessing now exists for image-based OCR inputs and is wired into the Tesseract path, including preprocessed artifact generation even when the OCR binary is unavailable.
+- The Apple-oriented OCR path now has a macOS-native bridge boundary and runtime result handling, but the actual bridge implementation remains pending due to missing Apple framework bindings in the current Python environment.
+- OCR setup and operations documentation now reflect the current verified Tesseract runtime, preprocessing behavior, local OCR storage, and Apple bridge limitation.
+- An OCR comparison harness has now been added so raw/preprocessed and future cross-engine comparisons can be represented and persisted locally.
+- A real raw-vs-preprocessed Tesseract comparison was run against a local receipt image; preprocessing produced a cleaner and faster result on the tested sample and should remain the default Tesseract path for now.
 
 ## Risks
 - image quality variability
