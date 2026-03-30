@@ -1,0 +1,1 @@
+"""Output components for LocalHomeApp."""

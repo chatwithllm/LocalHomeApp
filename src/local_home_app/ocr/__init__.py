@@ -1,0 +1,1 @@
+"""OCR components for LocalHomeApp."""

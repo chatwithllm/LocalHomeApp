@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.secret
+
+# Local app data (never commit real household data)
+local_data/
+receipts/
+ocr_outputs/
+exports/
+*.sqlite
+*.db
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
