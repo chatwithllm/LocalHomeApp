@@ -26,6 +26,12 @@
 - `docs/prd-refinement`
 - `fix/receipt-line-item-parser`
 
+## Phase Workflow Rule
+- Each phase must be implemented and tested locally before merge consideration.
+- Each phase should live on its own dedicated branch.
+- Documentation updates are required before merge approval is requested.
+- Merging to `main` should happen only after explicit approval.
+
 ## Background Service / Worker Names
 - Use clear human-readable service names.
 - Avoid generic process names where possible.
