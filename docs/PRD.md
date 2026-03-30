@@ -37,6 +37,8 @@ The project is designed as a production-quality local system rather than a throw
 
 ### Primary intake channel
 - Telegram bot.
+- In the current deployment model, Telegram ingress is owned by OpenClaw, which serves as the active Telegram-facing runtime.
+- LocalHomeApp acts as the local processing backend behind that ingress boundary.
 
 ### Telegram channel model for V1
 - **Main chat**: user commands, approvals, user-facing summaries.
@@ -88,6 +90,8 @@ Selection, fallback rules, and comparative quality evaluation must be documented
 - Documentation updates required for every phase and materially important module.
 - Phase completion requires passing documented acceptance criteria, including required local tooling and baseline test execution where applicable.
 - If a phase is partially scaffolded but not yet locally verified, that incomplete status must be recorded explicitly in the phase document.
+- Every phase must be tested locally before it is considered ready.
+- After local testing passes, each phase must proceed on its own dedicated branch, with updated documentation and a phase-specific commit before merge approval is requested.
 
 ## 11. Change Control / PRD Deviation Policy
 The project must not casually drift beyond its defined objective.

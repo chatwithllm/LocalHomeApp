@@ -40,7 +40,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class ApplicationSettings(BaseSettings):
     """Typed application settings for LocalHomeApp."""
 
-    model_config = SettingsConfigDict(env_prefix="LOCAL_HOME_APP_", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="LOCAL_HOME_APP_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     env_name: str = Field(default="development")
     data_root: str = Field(default="/Users/assistant/LocalHomeAppSensitiveData")
