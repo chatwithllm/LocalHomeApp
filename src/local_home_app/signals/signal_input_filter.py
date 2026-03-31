@@ -35,6 +35,8 @@ from __future__ import annotations
 from collections import Counter
 from typing import Iterable, List, Tuple
 
+from local_home_app.quality.normalization_runtime_service import normalize_record
+
 
 NOISY_ITEM_HINTS = [
     'savings',
@@ -55,13 +57,25 @@ def filter_signal_input_rows(rows: Iterable[dict]) -> Tuple[List[dict], Counter]
     skipped = Counter()
 
     for row in rows:
+        merchant_name = row.get('merchant_name')
         item_name = row.get('item_name')
         line_total = row.get('line_total')
+
+        normalized_record = normalize_record(
+            merchant_name=merchant_name,
+            item_name=item_name,
+            line_total=line_total,
+        )
+        normalized_item_name = normalized_record.normalized_item_name
 
         if not item_name:
             skipped['missing_item_name'] += 1
             continue
-        normalized = str(item_name).strip().lower()
+        if not normalized_item_name:
+            skipped['empty_after_normalization'] += 1
+            continue
+
+        normalized = normalized_item_name.strip().lower()
         if len(normalized) < 4:
             skipped['too_short'] += 1
             continue
@@ -71,7 +85,17 @@ def filter_signal_input_rows(rows: Iterable[dict]) -> Tuple[List[dict], Counter]
         if line_total is None:
             skipped['missing_price'] += 1
             continue
+        if normalized_record.quality_label == 'weak':
+            skipped['weak_quality'] += 1
+            continue
 
-        usable.append(row)
+        usable.append(
+            {
+                **row,
+                'merchant_name': normalized_record.merchant_name,
+                'item_name': normalized_item_name,
+                'quality_label': normalized_record.quality_label,
+            }
+        )
 
     return usable, skipped
