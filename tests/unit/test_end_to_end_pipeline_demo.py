@@ -38,4 +38,4 @@ def test_end_to_end_pipeline_demo_flow() -> None:
     )
     assert output.local_report
     assert output.telegram_summary
-    assert isinstance(skipped, dict | type(skipped))
+    assert isinstance(skipped, dict)

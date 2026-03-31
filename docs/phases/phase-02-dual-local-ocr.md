@@ -31,10 +31,12 @@ Implement a dual local OCR strategy that supports both Apple-optimized execution
 - Apple-oriented OCR, portable OCR, and preprocessing boundaries are now scaffolded for the next implementation slices.
 - OCR result storage has now been added, and the Tesseract path now has a first real execution implementation with explicit not-available and failed states.
 - Basic local preprocessing now exists for image-based OCR inputs and is wired into the Tesseract path, including preprocessed artifact generation even when the OCR binary is unavailable.
-- The Apple-oriented OCR path now has a macOS-native bridge boundary and runtime result handling, but the actual bridge implementation remains pending due to missing Apple framework bindings in the current Python environment.
-- OCR setup and operations documentation now reflect the current verified Tesseract runtime, preprocessing behavior, local OCR storage, and Apple bridge limitation.
+- The Apple-oriented OCR path now runs through a real macOS-native Swift/Vision bridge that is compiled locally on demand from the repo and executed against local image artifacts.
+- OCR setup and operations documentation now reflect the current verified Tesseract runtime, preprocessing behavior, local OCR storage, and the Swift/Vision bridge path for Apple OCR.
 - An OCR comparison harness has now been added so raw/preprocessed and future cross-engine comparisons can be represented and persisted locally.
 - A real raw-vs-preprocessed Tesseract comparison was run against a local receipt image; preprocessing produced a cleaner and faster result on the tested sample and should remain the default Tesseract path for now.
+- The Apple Vision path has now been validated locally through the native Swift/Vision bridge on this machine; a simple local image test completed successfully and returned structured OCR text.
+- The remaining operational expectation is to validate the Apple Vision path against additional real receipt artifacts and document any observed selection/fallback preference relative to Tesseract.
 
 ## Risks
 - image quality variability
