@@ -1,6 +1,10 @@
 from local_home_app.parsing.merchant_format_detector import detect_merchant_name
 
 
+def test_detect_merchant_name_costco() -> None:
+    assert detect_merchant_name("COSTCO WHOLESALE") == "Costco"
+
+
 def test_detect_merchant_name_kroger() -> None:
     assert detect_merchant_name("KROGER SAVINGS") == "Kroger"
 

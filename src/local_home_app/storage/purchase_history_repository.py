@@ -39,20 +39,25 @@ class PurchaseHistoryRepository:
     def __init__(self, connection: sqlite3.Connection) -> None:
         self.connection = connection
 
-    def list_line_items(self) -> List[sqlite3.Row]:
-        cursor = self.connection.execute(
-            """
+    def list_line_items(self, *, limit: int | None = None, item_query: str | None = None) -> List[sqlite3.Row]:
+        query = """
             SELECT rp.merchant_name, rp.receipt_date, rli.item_name, rli.line_total
             FROM receipt_line_items rli
             JOIN receipt_parses rp ON rp.parse_id = rli.parse_id
-            ORDER BY rp.receipt_date, rp.parse_id
-            """
-        )
+        """
+        params = []
+        if item_query:
+            query += " WHERE LOWER(rli.item_name) LIKE ?"
+            params.append(f"%{item_query.lower()}%")
+        query += " ORDER BY rp.receipt_date DESC, rp.parse_id DESC"
+        if limit is not None:
+            query += " LIMIT ?"
+            params.append(limit)
+        cursor = self.connection.execute(query, params)
         return cursor.fetchall()
 
-    def summarize_recent_receipts(self) -> List[sqlite3.Row]:
-        cursor = self.connection.execute(
-            """
+    def summarize_recent_receipts(self, *, limit: int | None = None, merchant_name: str | None = None) -> List[sqlite3.Row]:
+        query = """
             SELECT
                 rp.merchant_name,
                 rp.receipt_date,
@@ -60,8 +65,15 @@ class PurchaseHistoryRepository:
                 COUNT(rli.line_id) AS line_item_count
             FROM receipt_parses rp
             LEFT JOIN receipt_line_items rli ON rli.parse_id = rp.parse_id
-            GROUP BY rp.parse_id, rp.merchant_name, rp.receipt_date, rp.total
-            ORDER BY rp.receipt_date DESC, rp.parse_id DESC
-            """
-        )
+        """
+        params = []
+        if merchant_name:
+            query += " WHERE LOWER(rp.merchant_name) = ?"
+            params.append(merchant_name.lower())
+        query += " GROUP BY rp.parse_id, rp.merchant_name, rp.receipt_date, rp.total"
+        query += " ORDER BY rp.receipt_date DESC, rp.parse_id DESC"
+        if limit is not None:
+            query += " LIMIT ?"
+            params.append(limit)
+        cursor = self.connection.execute(query, params)
         return cursor.fetchall()

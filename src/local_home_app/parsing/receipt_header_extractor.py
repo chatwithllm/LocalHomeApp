@@ -47,7 +47,10 @@ PAYMENT_TOTAL_PATTERN = re.compile(r"\b(?:MASTERCARD|AMEX|DISCOVER|DEBIT|CREDIT)
 SUBTOTAL_PATTERN = re.compile(r"\bSUBTOTAL[: ]+(\d+[\s]*[\.,][\s]*\d{2})\b", re.IGNORECASE)
 TAX_PATTERN = re.compile(r"\bTAX[^\d]*(\d+[\s]*[\.,][\s]*\d{2})\b", re.IGNORECASE)
 DATE_PATTERN = re.compile(r"\b(\d{2}/\d{2}/\d{2})\b")
+ALT_DATE_PATTERN = re.compile(r"\b(\d{2}-\d{2}-\d{2})\b")
+ALT_LONG_DATE_PATTERN = re.compile(r"\b(\d{2}/\d{2}/\d{4})\b")
 TIME_PATTERN = re.compile(r"\b(\d{1,2}:\d{2}(?:am|pm)?)\b", re.IGNORECASE)
+COSTCO_TOTAL_BLOCK_PATTERN = re.compile(r"SUBTOTAL\s+([\d\., ]+)\s+TAX\s+([\d\., ]+)\s+TOTAL\s+([\d\., ]+)", re.IGNORECASE | re.DOTALL)
 
 
 def _normalize_amount(raw_amount: str) -> float:
@@ -63,16 +66,29 @@ def extract_receipt_header(*, intake_id: str, ocr_run_id: str, ocr_text: str) ->
     subtotal_match = SUBTOTAL_PATTERN.search(ocr_text)
     tax_match = TAX_PATTERN.search(ocr_text)
     date_match = DATE_PATTERN.search(ocr_text)
+    alt_date_match = ALT_DATE_PATTERN.search(ocr_text)
+    alt_long_date_match = ALT_LONG_DATE_PATTERN.search(ocr_text)
     time_match = TIME_PATTERN.search(ocr_text)
+    costco_total_block_match = COSTCO_TOTAL_BLOCK_PATTERN.search(ocr_text) if merchant_name == 'Costco' else None
 
     total_value = total_match.group(1) if total_match else None
     if total_value is None and payment_total_match:
         total_value = payment_total_match.group(1)
+    if total_value is None and costco_total_block_match:
+        total_value = costco_total_block_match.group(3)
 
     total = _normalize_amount(total_value) if total_value else None
     subtotal = _normalize_amount(subtotal_match.group(1)) if subtotal_match else None
     tax = _normalize_amount(tax_match.group(1)) if tax_match else None
-    receipt_date = date_match.group(1) if date_match else None
+    if subtotal is None and costco_total_block_match:
+        subtotal = _normalize_amount(costco_total_block_match.group(1))
+    if tax is None and costco_total_block_match:
+        tax = _normalize_amount(costco_total_block_match.group(2))
+    receipt_date = (
+        date_match.group(1)
+        if date_match
+        else (alt_date_match.group(1) if alt_date_match else (alt_long_date_match.group(1) if alt_long_date_match else None))
+    )
     receipt_time = time_match.group(1) if time_match else None
 
     return ReceiptParseRecord(
