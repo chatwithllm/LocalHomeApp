@@ -34,6 +34,8 @@ from __future__ import annotations
 
 def detect_merchant_name(ocr_text: str) -> str | None:
     normalized = ocr_text.lower()
+    if "costco" in normalized:
+        return "Costco"
     if "kroger" in normalized:
         return "Kroger"
     if "walmart" in normalized or "wal*mart" in normalized:

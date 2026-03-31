@@ -44,3 +44,23 @@ def test_extract_line_items_supports_comma_decimal_amounts() -> None:
     items = extract_line_items(parse_id="parse-001", ocr_text=text)
     assert items[0].line_total == 149.99
     assert items[0].item_name == "GIMBAL"
+
+
+def test_extract_line_items_costco_style_codes() -> None:
+    text = "E 337754 SPRING ROLL 9.99 N\n1957747 BUFFALO TOP 44.97 Y"
+    items = extract_line_items(parse_id="parse-001", ocr_text=text)
+
+    assert len(items) == 2
+    assert items[0].item_name == "SPRING ROLL"
+    assert items[0].line_total == 9.99
+    assert items[1].item_name == "BUFFALO TOP"
+    assert items[1].line_total == 44.97
+
+
+def test_extract_line_items_filters_costco_discount_and_member_noise() -> None:
+    text = "111950970348\n377963 /1957747 9.00-\nMember\nE 720650 MINI CUKES 4.89 N"
+    items = extract_line_items(parse_id="parse-001", ocr_text=text)
+
+    assert len(items) == 1
+    assert items[0].item_name == "MINI CUKES"
+    assert items[0].line_total == 4.89

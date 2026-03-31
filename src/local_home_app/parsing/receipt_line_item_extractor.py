@@ -46,7 +46,6 @@ ITEM_EXCLUSION_HINTS = [
     "total",
     "subtotal",
     "tax",
-    "savings",
     "fuel points",
     "change",
     "feedback",
@@ -58,6 +57,7 @@ ITEM_EXCLUSION_HINTS = [
     "walmart >",
     "wal*mart",
     "kroger",
+    "costco",
     "meijer",
     "cash back",
     "items sold",
@@ -70,12 +70,22 @@ ITEM_EXCLUSION_HINTS = [
     "number of items purchased",
     "payment tender",
     "approval code",
+    "approved - purchase",
+    "thank you",
+    "please come again",
+    "items sold:",
+    "total number of items sold",
+    "change",
 ]
-STRUCTURE_EXCLUSION_HINTS = ["st#", "op#", "te#", "tr#", "tc#", "mgr.", "sales id:", "s/n:", "txt", "tm:"]
+STRUCTURE_EXCLUSION_HINTS = ["st#", "op#", "te#", "tr#", "tc#", "mgr.", "sales id:", "s/n:", "txt", "tm:", "whse:", "trm:", "trn:", "opt:"]
 PRICE_PATTERN = re.compile(r"(\d+[\s]*[\.,][\s]*\d{2})")
 ALPHA_PATTERN = re.compile(r"[A-Za-z]{3,}")
 AMOUNT_ONLY_PATTERN = re.compile(r"^\d+[\s]*[\.,][\s]*\d{2}$")
 CITY_STATE_PATTERN = re.compile(r"^[A-Za-z .'-]+,\s*[A-Z]{2}(?:\s+\d{5})?$")
+LEADING_ITEM_CODE_PATTERN = re.compile(r"^(?:E\s+)?\d{4,}\s+")
+TRAILING_TAX_FLAG_PATTERN = re.compile(r"\s+[NY]$")
+DISCOUNT_LINE_PATTERN = re.compile(r"^\d{4,}\s*/\s*\d{4,}.*$")
+MEMBER_NUMBER_PATTERN = re.compile(r"^\d{10,}$")
 
 
 def extract_line_items(*, parse_id: str, ocr_text: str) -> List[ReceiptLineItemRecord]:
@@ -88,17 +98,28 @@ def extract_line_items(*, parse_id: str, ocr_text: str) -> List[ReceiptLineItemR
             continue
         if len(line) < 4:
             continue
+        if normalized == 'member':
+            continue
         if AMOUNT_ONLY_PATTERN.match(line):
             continue
         if CITY_STATE_PATTERN.match(line):
+            continue
+        if DISCOUNT_LINE_PATTERN.match(line):
+            continue
+        if MEMBER_NUMBER_PATTERN.match(line):
             continue
         if normalized.startswith('date:') or normalized.startswith('| date:'):
             continue
         if normalized.startswith('sales ') or normalized.startswith('sales[') or normalized.startswith('sales id'):
             continue
+        if normalized.startswith('total ') or normalized.startswith('subtotal') or normalized.startswith('tax '):
+            continue
+        if normalized == 'chip' or normalized == 'read':
+            continue
         if not ALPHA_PATTERN.search(line):
             continue
 
+        had_costco_style_code = bool(LEADING_ITEM_CODE_PATTERN.match(line))
         price_match = PRICE_PATTERN.search(line)
         item_name = line
         line_total = None
@@ -107,6 +128,10 @@ def extract_line_items(*, parse_id: str, ocr_text: str) -> List[ReceiptLineItemR
             line_total = float(price_match.group(1).replace(' ', '').replace(',', '.'))
             item_name = line[: price_match.start()].strip() or line
             confidence_summary = "medium"
+
+        item_name = LEADING_ITEM_CODE_PATTERN.sub('', item_name).strip()
+        if had_costco_style_code:
+            item_name = TRAILING_TAX_FLAG_PATTERN.sub('', item_name).strip()
 
         if len(item_name.strip()) < 3:
             continue
