@@ -1,7 +1,7 @@
 # Module: apple_vision_ocr.py
 
 ## Purpose
-Provide the Apple-oriented OCR engine boundary through a macOS-native bridge.
+Provide the Apple-oriented OCR engine through a real macOS-native Swift/Vision bridge.
 
 ## Inputs
 Intake identifier and local source artifact path.
@@ -21,11 +21,12 @@ Structured OCR result record.
 Used on Apple hardware environments.
 
 ## Required Permissions
-Local file access and macOS-native OCR bridge/runtime access when implemented.
+Local file access and macOS-native OCR bridge/runtime access through Swift/Vision tooling.
 
 ## Expected Errors / Failure Modes
-- bridge not yet implemented
-- bridge execution failure
+- bridge compilation/runtime failure
+- unreadable local image input
+- local Apple OCR unavailable on non-macOS or incomplete toolchain setups
 
 ## Related Tests
 - tests/unit/test_apple_vision_ocr.py
